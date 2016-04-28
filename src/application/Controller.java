@@ -10,6 +10,7 @@ import javafx.geometry.VPos;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.RadioButton;
@@ -54,10 +55,16 @@ public class Controller {
 
 	@FXML
 	private TextField tfMaxSpeed, tfCarSize;
-	
+
+	@FXML
+	private Canvas canvasAnalyticsOne, canvasAnalyticsTwo;
+
+	@FXML
+	private CheckBox showLive, showAnalyticsOne, showAnalyticsTwo;
+
 	@FXML
 	private TextField tfFramerate;
-	private Integer framerate=1000;
+	private Integer framerate = 1000;
 
 	private boolean pause = false, stop = true;
 
@@ -68,7 +75,7 @@ public class Controller {
 	private int CAR_SIZE = 10;
 	private int MAX_SPEED = 5;
 	private Canvas canvas;
-	private GraphicsContext gc;
+	private GraphicsContext gc, gcAnalyticsOne, gcAnalyticsTwo;
 
 	@FXML
 	private void pause() {
@@ -77,7 +84,7 @@ public class Controller {
 		btnStop.setDisable(false);
 		btnPause.setDisable(true);
 		piSimulating.setVisible(false);
-		
+
 		tfp.setDisable(true);
 		tfp0.setDisable(true);
 		tfC.setDisable(true);
@@ -100,14 +107,19 @@ public class Controller {
 		btnPause.setDisable(true);
 		btnStop.setDisable(true);
 		piSimulating.setVisible(false);
-		
+
 		tfp.setDisable(false);
 		tfp0.setDisable(false);
 		tfC.setDisable(false);
+
 		rbDichteAbs.setDisable(false);
 		rbDichteProz.setDisable(false);
-		tfdichte.setDisable(false);
-		tfDichteAbs.setDisable(false);
+
+		if (rbDichteAbs.isSelected())
+			tfDichteAbs.setDisable(false);
+		else
+			tfdichte.setDisable(false);
+		
 		tfsize.setDisable(false);
 		tfdisplayStart.setDisable(false);
 		tfdisplayStop.setDisable(false);
@@ -129,7 +141,7 @@ public class Controller {
 
 	@FXML
 	private void simulate() {
-		
+
 		tfp.setDisable(true);
 		tfp0.setDisable(true);
 		tfC.setDisable(true);
@@ -143,13 +155,13 @@ public class Controller {
 		tfMaxSpeed.setDisable(true);
 		tfCarSize.setDisable(true);
 		tfFramerate.setDisable(true);
-		
+
 		pause = false;
 		streetpane.getChildren().removeAll(streetpane.getChildren());
 		canvas = null;
 		displayStart = Integer.parseInt(tfdisplayStart.getText());
 		displayStop = Integer.parseInt(tfdisplayStop.getText());
-		if(!tfFramerate.getText().equals(""))
+		if (!tfFramerate.getText().equals(""))
 			framerate = Integer.parseInt(tfFramerate.getText());
 		CAR_SIZE = Integer.parseInt(tfCarSize.getText());
 
@@ -168,11 +180,15 @@ public class Controller {
 				dichte = Double.parseDouble(tfdichte.getText());
 			if (!tfDichteAbs.getText().equals(""))
 				dichteAbs = Long.parseLong(tfDichteAbs.getText());
-			
+
 			MAX_SPEED = Integer.parseInt(tfMaxSpeed.getText());
 			size = Integer.parseInt(tfsize.getText());
 			initSimulation();
 			stop = false;
+			if (gcAnalyticsOne != null)
+				gcAnalyticsOne.clearRect(0, 0, canvasAnalyticsOne.getWidth(), canvasAnalyticsOne.getHeight());
+			if (gcAnalyticsTwo != null)
+				gcAnalyticsTwo.clearRect(0, 0, canvasAnalyticsTwo.getWidth(), canvasAnalyticsTwo.getHeight());
 		}
 
 		new Thread() {
@@ -188,7 +204,12 @@ public class Controller {
 					if (numSteps % framerate == 0) {
 						Platform.runLater(new Runnable() {
 							public void run() {
-								draw();
+								if (showLive.isSelected())
+									draw();
+								if (showAnalyticsOne.isSelected())
+									drawAnalyticsOne(numSteps);
+								if (showAnalyticsTwo.isSelected())
+									drawAnalyticsTwo(numSteps);
 							}
 						});
 					}
@@ -236,14 +257,17 @@ public class Controller {
 		for (int t = 0; t < street.length; t++) {
 			for (int i = 0; i < size; i++) {
 				if (street[t][i] != null && street[t][i].getSpeed() > 0) {
-					for (int j = 1; j <= street[t][i].getSpeed()+1; j++) {
+					for (int j = 1; j <= street[t][i].getSpeed() + 1; j++) {
 						int check = i + j;
 						if (i + j >= size)
 							check -= size;
 						if (street[t][check] != null) {
 							if (checkTrackChange(i, t, 1 - t)) {
-								street[1 - t][i] = street[t][i];
-								street[t][i] = null;
+								if (street[1 - t][i] != null)
+									System.out.println("crash");
+								// street[1 - t][i] = street[t][i];
+								// street[t][i] = null;
+								street[t][i].setChangeTrack(true);
 							}
 
 							break;
@@ -256,13 +280,23 @@ public class Controller {
 
 	private void accelerateCars() {
 		for (int t = 0; t < street.length; t++) {
-			for (Car c : street[t]) {
-				if (c != null && c.getSpeed() < MAX_SPEED) {
-					c.setSpeed(c.getSpeed() + 1);
+			for (int i = 0; i < size; i++) {
+				Car c = street[t][i];
+				if (c != null) {
+					if (c.getSpeed() < MAX_SPEED) {
+						c.setSpeed(c.getSpeed() + 1);
+					}
+					if (c.isChangeTrack()) {
+						if (street[1 - t][i] != null)
+							System.out.println("crash while changing tracks");
+						street[t][i].setChangeTrack(false);
+						street[1 - t][i] = street[t][i];
+						street[t][i] = null;
+					}
+
 				}
 			}
 		}
-
 	}
 
 	private void breakCars() {
@@ -350,7 +384,7 @@ public class Controller {
 						moving = false;
 					}
 					if (street[t][pos] != null) {
-						System.out.println("crash:" + i + "-" + c.getSpeed());
+						System.out.println("crash while moving");
 					}
 					street[t][pos] = c;
 					street[t][i] = null;
@@ -361,6 +395,76 @@ public class Controller {
 					moving = false;
 				}
 			}
+		}
+	}
+
+	private void drawAnalyticsOne(Long numSteps) {
+		if (gcAnalyticsOne == null) {
+			gcAnalyticsOne = canvasAnalyticsOne.getGraphicsContext2D();
+		}
+
+		gcAnalyticsOne.setTextAlign(TextAlignment.CENTER);
+		gcAnalyticsOne.setTextBaseline(VPos.CENTER);
+
+		long trackOffset = (long) ((numSteps * 2)%canvasAnalyticsOne.getHeight());
+		for (int t = street.length - 1; t >= 0; t--) {
+			int offset = 0;
+			for (int i = displayStart; i <= displayStop; i++) {
+
+				Car c = street[t][i];
+				if (c == null) {
+					gcAnalyticsOne.setFill(Color.BLACK);
+				} else {
+					if (c.getSpeed() == 0) {
+						gcAnalyticsOne.setFill(Color.WHITE);
+					} else {
+						gcAnalyticsOne.setFill(Color.hsb(
+								(Color.GREEN.getHue()
+										+ (Color.RED.getHue() - Color.GREEN.getHue()) * c.getSpeed() / MAX_SPEED),
+								1.0, 1.0));
+					}
+				}
+
+				gcAnalyticsOne.fillPolygon(new double[] { offset, offset + 1, offset + 1, offset },
+						new double[] { 0 + trackOffset, 0 + trackOffset, 1 + trackOffset, 1 + trackOffset }, 4);
+				offset += 1;
+			}
+			trackOffset += 1;
+		}
+	}
+
+	private void drawAnalyticsTwo(Long numSteps) {
+		if (gcAnalyticsTwo == null) {
+			gcAnalyticsTwo = canvasAnalyticsTwo.getGraphicsContext2D();
+		}
+
+		gcAnalyticsTwo.setTextAlign(TextAlignment.CENTER);
+		gcAnalyticsTwo.setTextBaseline(VPos.CENTER);
+
+		long trackOffset = (long) ((numSteps * 2)%canvasAnalyticsTwo.getHeight());
+		for (int t = street.length - 1; t >= 0; t--) {
+			int offset = 0;
+			for (int i = displayStart; i <= displayStop; i++) {
+
+				Car c = street[t][i];
+				if (c == null) {
+					// gcAnalyticsTwo.setFill(Color.BLACK);
+				} else {
+					if (c.getSpeed() == 0) {
+						gcAnalyticsTwo.setFill(Color.WHITE);
+					} else {
+						gcAnalyticsTwo.setFill(Color.hsb(
+								(Color.GREEN.getHue()
+										+ (Color.RED.getHue() - Color.GREEN.getHue()) * c.getSpeed() / MAX_SPEED),
+								1.0, 1.0));
+					}
+				}
+
+				gcAnalyticsTwo.fillPolygon(new double[] { offset, offset + 1, offset + 1, offset },
+						new double[] { 0 + trackOffset, 0 + trackOffset, 1 + trackOffset, 1 + trackOffset }, 4);
+				offset += 1;
+			}
+			trackOffset += 1;
 		}
 	}
 
@@ -402,13 +506,14 @@ public class Controller {
 				if (c == null) {
 					gc.setFill(Color.BLACK);
 				} else {
-					if (c.getSpeed() == 0)
+					if (c.getSpeed() == 0) {
 						gc.setFill(Color.WHITE);
-					else
+					} else {
 						gc.setFill(Color.hsb(
 								(Color.GREEN.getHue()
 										+ (Color.RED.getHue() - Color.GREEN.getHue()) * c.getSpeed() / MAX_SPEED),
 								1.0, 1.0));
+					}
 				}
 
 				gc.fillPolygon(new double[] { offset, offset + CAR_SIZE, offset + CAR_SIZE, offset }, new double[] {
@@ -422,7 +527,7 @@ public class Controller {
 		gc.setStroke(Color.BLACK);
 		gc.setLineWidth(1);
 
-		lblNumSteps.setText("#Iterationen: " + numSteps);
+		lblNumSteps.setText("#Iter.: " + numSteps);
 		lblAvgTime.setText("Avg. Time (ms): " + ((new Date().getTime() - startTime.getTime()) / numSteps));
 
 	}

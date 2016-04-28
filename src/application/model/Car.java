@@ -3,6 +3,7 @@ package application.model;
 public class Car {
 	
 	private int speed;
+	private boolean changeTrack=false;
 	
 	public Car(int speed){
 		this.speed=speed;
@@ -14,6 +15,14 @@ public class Car {
 
 	public void setSpeed(int speed) {
 		this.speed = speed;
+	}
+
+	public boolean isChangeTrack() {
+		return changeTrack;
+	}
+
+	public void setChangeTrack(boolean changeTrack) {
+		this.changeTrack = changeTrack;
 	}
 
 }

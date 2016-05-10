@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.Random;
 
 import application.model.Car;
+import application.threads.Master;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.VPos;
@@ -26,7 +27,8 @@ public class Controller {
 	@FXML
 	private TextField tfp0;
 	@FXML
-	private TextField tfdichte, tfDichteAbs;
+	private TextField tfdichte, tfDichteAbs, tfNumPerThread, tfNumThreads;
+	private Integer numPerThread, numThreads;
 	@FXML
 	private TextField tfsize;
 	@FXML
@@ -44,8 +46,6 @@ public class Controller {
 
 	@FXML
 	private Label lblNumSteps, lblAvgTime;
-	private Long numSteps = 0L;
-	private Date startTime;
 
 	@FXML
 	private RadioButton rbDichteProz, rbDichteAbs;
@@ -66,7 +66,7 @@ public class Controller {
 	private TextField tfFramerate;
 	private Integer framerate = 1000;
 
-	private boolean pause = false, stop = true;
+	private boolean stop = true;
 
 	private Car street[][];
 	private Double p, p0, dichte;
@@ -76,10 +76,12 @@ public class Controller {
 	private int MAX_SPEED = 5;
 	private Canvas canvas;
 	private GraphicsContext gc, gcAnalyticsOne, gcAnalyticsTwo;
+	private Controller controller = this;
+	private Master master;
 
 	@FXML
 	private void pause() {
-		pause = true;
+		master.setPause(true);
 		btnPlay.setDisable(false);
 		btnStop.setDisable(false);
 		btnPause.setDisable(true);
@@ -103,6 +105,7 @@ public class Controller {
 	@FXML
 	private void stop() {
 		stop = true;
+		master.setStop(true);
 		btnPlay.setDisable(false);
 		btnPause.setDisable(true);
 		btnStop.setDisable(true);
@@ -119,13 +122,15 @@ public class Controller {
 			tfDichteAbs.setDisable(false);
 		else
 			tfdichte.setDisable(false);
-		
+
 		tfsize.setDisable(false);
 		tfdisplayStart.setDisable(false);
 		tfdisplayStop.setDisable(false);
 		tfMaxSpeed.setDisable(false);
 		tfCarSize.setDisable(false);
 		tfFramerate.setDisable(false);
+		tfNumPerThread.setDisable(false);
+		tfNumThreads.setDisable(false);
 	}
 
 	@FXML
@@ -155,14 +160,20 @@ public class Controller {
 		tfMaxSpeed.setDisable(true);
 		tfCarSize.setDisable(true);
 		tfFramerate.setDisable(true);
+		tfNumPerThread.setDisable(true);
+		tfNumThreads.setDisable(true);
 
-		pause = false;
+		if (master != null)
+			master.setPause(false);
 		streetpane.getChildren().removeAll(streetpane.getChildren());
 		canvas = null;
 		displayStart = Integer.parseInt(tfdisplayStart.getText());
 		displayStop = Integer.parseInt(tfdisplayStop.getText());
-		if (!tfFramerate.getText().equals(""))
+		if (!tfFramerate.getText().equals("")) {
 			framerate = Integer.parseInt(tfFramerate.getText());
+			if (master != null)
+				master.setFramerate(framerate);
+		}
 		CAR_SIZE = Integer.parseInt(tfCarSize.getText());
 
 		btnPlay.setDisable(true);
@@ -171,8 +182,6 @@ public class Controller {
 		piSimulating.setVisible(true);
 
 		if (stop) {
-			numSteps = 0L;
-			startTime = new Date();
 			p = Double.parseDouble(tfp.getText());
 			p0 = Double.parseDouble(tfp0.getText());
 			c = Double.parseDouble(tfC.getText());
@@ -180,11 +189,14 @@ public class Controller {
 				dichte = Double.parseDouble(tfdichte.getText());
 			if (!tfDichteAbs.getText().equals(""))
 				dichteAbs = Long.parseLong(tfDichteAbs.getText());
+			numThreads = Integer.parseInt(tfNumThreads.getText());
+			numPerThread = Integer.parseInt(tfNumPerThread.getText());
 
 			MAX_SPEED = Integer.parseInt(tfMaxSpeed.getText());
 			size = Integer.parseInt(tfsize.getText());
 			initSimulation();
 			stop = false;
+			master = null;
 			if (gcAnalyticsOne != null)
 				gcAnalyticsOne.clearRect(0, 0, canvasAnalyticsOne.getWidth(), canvasAnalyticsOne.getHeight());
 			if (gcAnalyticsTwo != null)
@@ -193,30 +205,28 @@ public class Controller {
 
 		new Thread() {
 			public void run() {
-				while (!pause && !stop) {
-					numSteps++;
-					changeTracks();
-					accelerateCars();
-					breakCars();
-					dawdleCars();
-					moveCars();
+				if (master == null)
+					
+					master = new Master(street[0].length, numPerThread, numThreads, c, street, MAX_SPEED, p, p0,
+							controller, framerate);
 
-					if (numSteps % framerate == 0) {
-						Platform.runLater(new Runnable() {
-							public void run() {
-								if (showLive.isSelected())
-									draw();
-								if (showAnalyticsOne.isSelected())
-									drawAnalyticsOne(numSteps);
-								if (showAnalyticsTwo.isSelected())
-									drawAnalyticsTwo(numSteps);
-							}
-						});
-					}
-				}
+				master.startSimulation();
 			}
 		}.start();
 
+	}
+
+	public void updateGraphics() {
+		Platform.runLater(new Runnable() {
+			public void run() {
+				if (showLive.isSelected())
+					draw();
+				if (showAnalyticsOne.isSelected())
+					drawAnalyticsOne(master.getNumSteps());
+				if (showAnalyticsTwo.isSelected())
+					drawAnalyticsTwo(master.getNumSteps());
+			}
+		});
 	}
 
 	private void initSimulation() {
@@ -253,151 +263,6 @@ public class Controller {
 		}
 	}
 
-	private void changeTracks() {
-		for (int t = 0; t < street.length; t++) {
-			for (int i = 0; i < size; i++) {
-				if (street[t][i] != null && street[t][i].getSpeed() > 0) {
-					for (int j = 1; j <= street[t][i].getSpeed() + 1; j++) {
-						int check = i + j;
-						if (i + j >= size)
-							check -= size;
-						if (street[t][check] != null) {
-							if (checkTrackChange(i, t, 1 - t)) {
-								if (street[1 - t][i] != null)
-									System.out.println("crash");
-								// street[1 - t][i] = street[t][i];
-								// street[t][i] = null;
-								street[t][i].setChangeTrack(true);
-							}
-
-							break;
-						}
-					}
-				}
-			}
-		}
-	}
-
-	private void accelerateCars() {
-		for (int t = 0; t < street.length; t++) {
-			for (int i = 0; i < size; i++) {
-				Car c = street[t][i];
-				if (c != null) {
-					if (c.getSpeed() < MAX_SPEED) {
-						c.setSpeed(c.getSpeed() + 1);
-					}
-					if (c.isChangeTrack()) {
-						if (street[1 - t][i] != null)
-							System.out.println("crash while changing tracks");
-						street[t][i].setChangeTrack(false);
-						street[1 - t][i] = street[t][i];
-						street[t][i] = null;
-					}
-
-				}
-			}
-		}
-	}
-
-	private void breakCars() {
-		for (int t = 0; t < street.length; t++) {
-			for (int i = 0; i < size; i++) {
-				if (street[t][i] != null && street[t][i].getSpeed() > 0) {
-					for (int j = 1; j <= street[t][i].getSpeed(); j++) {
-						int check = i + j;
-						if (i + j >= size)
-							check -= size;
-						if (street[t][check] != null) {
-							street[t][i].setSpeed(j - 1);
-							break;
-						}
-					}
-				}
-			}
-		}
-	}
-
-	private boolean checkTrackChange(int pos, int currentTrack, int targetTrack) {
-
-		// check behind cars
-		for (int i = 1; i <= 5; i++) {
-			int check = pos - i;
-			if (check < 0)
-				check += size;
-			if (street[targetTrack][check] != null) {
-				return false;
-			}
-		}
-
-		// check neighbour car
-		if (street[targetTrack][pos] != null)
-			return false;
-
-		// check previous cars
-		for (int i = 1; i <= street[currentTrack][pos].getSpeed() + 1; i++) {
-			int check = pos + i;
-			if (check >= size)
-				check -= size;
-			if (street[targetTrack][check] != null) {
-				return false;
-			}
-		}
-
-		// Check track change possibility
-		Random random = new Random();
-		if (random.nextFloat() < c) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	private void dawdleCars() {
-		Random random = new Random();
-		for (int t = 0; t < street.length; t++) {
-			for (Car c : street[t]) {
-				if (c != null && c.getSpeed() > 0) {
-					if (c.getSpeed() > 1) {
-						if (random.nextFloat() < p) {
-							c.setSpeed(c.getSpeed() - 1);
-						}
-					} else {
-						if (random.nextFloat() < p0) {
-							c.setSpeed(c.getSpeed() - 1);
-						}
-					}
-				}
-			}
-		}
-	}
-
-	private void moveCars() {
-		for (int t = 0; t < street.length; t++) {
-			boolean moving = true;
-			int i = 0;
-			while (moving) {
-				Car c = street[t][i];
-				if (c != null && c.getSpeed() > 0) {
-					int pos = i + c.getSpeed();
-					if (pos >= size) {
-						pos -= size;
-						moving = false;
-					}
-					if (street[t][pos] != null) {
-						System.out.println("crash while moving");
-					}
-					street[t][pos] = c;
-					street[t][i] = null;
-					i = pos;
-				}
-				i++;
-				if (i >= size) {
-					moving = false;
-				}
-			}
-		}
-	}
-
 	private void drawAnalyticsOne(Long numSteps) {
 		if (gcAnalyticsOne == null) {
 			gcAnalyticsOne = canvasAnalyticsOne.getGraphicsContext2D();
@@ -406,7 +271,7 @@ public class Controller {
 		gcAnalyticsOne.setTextAlign(TextAlignment.CENTER);
 		gcAnalyticsOne.setTextBaseline(VPos.CENTER);
 
-		long trackOffset = (long) ((numSteps * 2)%canvasAnalyticsOne.getHeight());
+		long trackOffset = (long) ((numSteps * 2) % canvasAnalyticsOne.getHeight());
 		for (int t = street.length - 1; t >= 0; t--) {
 			int offset = 0;
 			for (int i = displayStart; i <= displayStop; i++) {
@@ -441,7 +306,7 @@ public class Controller {
 		gcAnalyticsTwo.setTextAlign(TextAlignment.CENTER);
 		gcAnalyticsTwo.setTextBaseline(VPos.CENTER);
 
-		long trackOffset = (long) ((numSteps * 2)%canvasAnalyticsTwo.getHeight());
+		long trackOffset = (long) ((numSteps * 2) % canvasAnalyticsTwo.getHeight());
 		for (int t = street.length - 1; t >= 0; t--) {
 			int offset = 0;
 			for (int i = displayStart; i <= displayStop; i++) {
@@ -527,8 +392,9 @@ public class Controller {
 		gc.setStroke(Color.BLACK);
 		gc.setLineWidth(1);
 
-		lblNumSteps.setText("#Iter.: " + numSteps);
-		lblAvgTime.setText("Avg. Time (ms): " + ((new Date().getTime() - startTime.getTime()) / numSteps));
+		lblNumSteps.setText("#Iter.: " + master.getNumSteps());
+		lblAvgTime.setText(
+				"Avg. Time (ms): " + ((new Date().getTime() - master.getStartTime().getTime()) / master.getNumSteps()));
 
 	}
 

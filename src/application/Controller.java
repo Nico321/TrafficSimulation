@@ -1,5 +1,10 @@
 package application;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Date;
 import java.util.Random;
 
@@ -27,7 +32,7 @@ public class Controller {
 	@FXML
 	private TextField tfp0;
 	@FXML
-	private TextField tfdichte, tfDichteAbs, tfNumPerThread, tfNumThreads;
+	private TextField tfdichte, tfDichteAbs, tfNumPerThread, tfNumThreads, tfTracks;
 	private Integer numPerThread, numThreads;
 	@FXML
 	private TextField tfsize;
@@ -35,7 +40,7 @@ public class Controller {
 	private Pane streetpane;
 
 	@FXML
-	private Button btnPlay, btnPause, btnStop;
+	private Button btnPlay, btnPause, btnStop, btnSaveArray, btnLoadArray, btnDiscardArray;
 
 	@FXML
 	private ProgressIndicator piSimulating;
@@ -60,13 +65,13 @@ public class Controller {
 	private Canvas canvasAnalyticsOne, canvasAnalyticsTwo;
 
 	@FXML
-	private CheckBox showLive, showAnalyticsOne, showAnalyticsTwo;
+	private CheckBox showLive, showAnalyticsOne, showAnalyticsTwo, chkMaxSpeedPerCar;
 
 	@FXML
 	private TextField tfFramerate;
 	private Integer framerate = 1000;
 
-	private boolean stop = true;
+	private boolean stop = true, canSaveArray = false, didLoadArray = false;
 
 	private Car street[][];
 	private Double p, p0, dichte;
@@ -78,6 +83,7 @@ public class Controller {
 	private GraphicsContext gc, gcAnalyticsOne, gcAnalyticsTwo;
 	private Controller controller = this;
 	private Master master;
+	private int numTracks;
 
 	@FXML
 	private void pause() {
@@ -110,6 +116,9 @@ public class Controller {
 		btnPause.setDisable(true);
 		btnStop.setDisable(true);
 		piSimulating.setVisible(false);
+
+		tfTracks.setDisable(false);
+		chkMaxSpeedPerCar.setDisable(false);
 
 		tfp.setDisable(false);
 		tfp0.setDisable(false);
@@ -147,21 +156,7 @@ public class Controller {
 	@FXML
 	private void simulate() {
 
-		tfp.setDisable(true);
-		tfp0.setDisable(true);
-		tfC.setDisable(true);
-		rbDichteAbs.setDisable(true);
-		rbDichteProz.setDisable(true);
-		tfdichte.setDisable(true);
-		tfDichteAbs.setDisable(true);
-		tfsize.setDisable(true);
-		tfdisplayStart.setDisable(true);
-		tfdisplayStop.setDisable(true);
-		tfMaxSpeed.setDisable(true);
-		tfCarSize.setDisable(true);
-		tfFramerate.setDisable(true);
-		tfNumPerThread.setDisable(true);
-		tfNumThreads.setDisable(true);
+		disableAll();
 
 		if (master != null)
 			master.setPause(false);
@@ -191,6 +186,7 @@ public class Controller {
 				dichteAbs = Long.parseLong(tfDichteAbs.getText());
 			numThreads = Integer.parseInt(tfNumThreads.getText());
 			numPerThread = Integer.parseInt(tfNumPerThread.getText());
+			numTracks = Integer.parseInt(tfTracks.getText());
 
 			MAX_SPEED = Integer.parseInt(tfMaxSpeed.getText());
 			size = Integer.parseInt(tfsize.getText());
@@ -206,7 +202,7 @@ public class Controller {
 		new Thread() {
 			public void run() {
 				if (master == null)
-					
+
 					master = new Master(street[0].length, numPerThread, numThreads, c, street, MAX_SPEED, p, p0,
 							controller, framerate);
 
@@ -214,6 +210,26 @@ public class Controller {
 			}
 		}.start();
 
+	}
+
+	private void disableAll() {
+		tfp.setDisable(true);
+		tfp0.setDisable(true);
+		tfC.setDisable(true);
+		rbDichteAbs.setDisable(true);
+		rbDichteProz.setDisable(true);
+		tfdichte.setDisable(true);
+		tfDichteAbs.setDisable(true);
+		tfsize.setDisable(true);
+		tfdisplayStart.setDisable(true);
+		tfdisplayStop.setDisable(true);
+		tfMaxSpeed.setDisable(true);
+		tfCarSize.setDisable(true);
+		tfFramerate.setDisable(true);
+		tfNumPerThread.setDisable(true);
+		tfNumThreads.setDisable(true);
+		tfTracks.setDisable(true);
+		chkMaxSpeedPerCar.setDisable(true);
 	}
 
 	public void updateGraphics() {
@@ -229,13 +245,125 @@ public class Controller {
 		});
 	}
 
-	private void initSimulation() {
-		street = new Car[2][size];
+	@FXML
+	private void discardArray() {
+		didLoadArray = false;
+		canSaveArray = false;
+		btnDiscardArray.setDisable(true);
+		btnLoadArray.setDisable(false);
+	}
 
-		if (rbDichteProz.isSelected())
-			initDichteProz();
-		else
-			initDichteAbs();
+	@FXML
+	private void loadStreet() {
+		piSimulating.setVisible(true);
+		btnPlay.setDisable(true);
+
+		new Thread() {
+			public void run() {
+				try {
+					FileInputStream fis = new FileInputStream("street");
+					ObjectInputStream in = new ObjectInputStream(fis);
+					street = (Car[][]) in.readObject();
+					in.close();
+					canSaveArray = true;
+					didLoadArray = true;
+					btnLoadArray.setDisable(true);
+					btnSaveArray.setDisable(false);
+					btnDiscardArray.setDisable(false);
+					Platform.runLater(new Runnable() {
+						@Override
+						public void run() {
+							piSimulating.setVisible(false);
+							btnPlay.setDisable(false);
+						}
+					});
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}.start();
+
+	}
+
+	@FXML
+	private void initArray() {
+		piSimulating.setVisible(true);
+		btnPlay.setDisable(true);
+
+		new Thread() {
+			public void run() {
+				initSimulation();
+
+				Platform.runLater(new Runnable() {
+					@Override
+					public void run() {
+						piSimulating.setVisible(false);
+						btnPlay.setDisable(false);
+					}
+				});
+			}
+		}.start();
+	}
+
+	@FXML
+	private void saveStreet() {
+		if (street != null && canSaveArray) {
+
+			piSimulating.setVisible(true);
+			btnPlay.setDisable(true);
+
+			new Thread() {
+				public void run() {
+					try {
+						FileOutputStream fos = new FileOutputStream("street");
+						ObjectOutputStream out = new ObjectOutputStream(fos);
+						out.writeObject(street);
+						out.flush();
+						out.close();
+
+						Platform.runLater(new Runnable() {
+							@Override
+							public void run() {
+								piSimulating.setVisible(false);
+								btnLoadArray.setDisable(false);
+								btnPlay.setDisable(false);
+							}
+						});
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}.start();
+
+		}
+	}
+
+	private void initSimulation() {
+		if (!didLoadArray) {
+			p = Double.parseDouble(tfp.getText());
+			p0 = Double.parseDouble(tfp0.getText());
+			c = Double.parseDouble(tfC.getText());
+			if (!tfdichte.getText().equals(""))
+				dichte = Double.parseDouble(tfdichte.getText());
+			if (!tfDichteAbs.getText().equals(""))
+				dichteAbs = Long.parseLong(tfDichteAbs.getText());
+			numThreads = Integer.parseInt(tfNumThreads.getText());
+			numPerThread = Integer.parseInt(tfNumPerThread.getText());
+			numTracks = Integer.parseInt(tfTracks.getText());
+
+			MAX_SPEED = Integer.parseInt(tfMaxSpeed.getText());
+			size = Integer.parseInt(tfsize.getText());
+
+			street = new Car[numTracks][size];
+			
+			if (rbDichteProz.isSelected())
+				initDichteProz();
+			else
+				initDichteAbs();
+		}
+
+		canSaveArray = true;
+		btnSaveArray.setDisable(false);
 	}
 
 	private void initDichteAbs() {
@@ -246,7 +374,8 @@ public class Controller {
 			int t = random.nextInt((1 - 0) + 1);
 			int pos = random.nextInt(size);
 			if (street[t][pos] == null) {
-				street[t][pos] = new Car(random.nextInt((MAX_SPEED - 1) + 1) + 1);
+				int carMaxSpeed = random.nextInt((MAX_SPEED - 1) + 1) + 1;
+				street[t][pos] = new Car(random.nextInt((carMaxSpeed - 1) + 1) + 1, carMaxSpeed);
 				dichteAbs--;
 			}
 		}
@@ -257,7 +386,8 @@ public class Controller {
 		for (int t = 0; t < street.length; t++) {
 			for (int i = 0; i < size; i++) {
 				if (random.nextFloat() < dichte) {
-					street[t][i] = new Car(random.nextInt((MAX_SPEED - 1) + 1) + 1);
+					int carMaxSpeed = random.nextInt((MAX_SPEED - 1) + 1) + 1;
+					street[t][i] = new Car(random.nextInt((carMaxSpeed - 1) + 1) + 1, carMaxSpeed);
 				}
 			}
 		}
@@ -271,7 +401,7 @@ public class Controller {
 		gcAnalyticsOne.setTextAlign(TextAlignment.CENTER);
 		gcAnalyticsOne.setTextBaseline(VPos.CENTER);
 
-		long trackOffset = (long) ((numSteps * 2) % canvasAnalyticsOne.getHeight());
+		long trackOffset = (long) ((numSteps * street.length) % canvasAnalyticsOne.getHeight());
 		for (int t = street.length - 1; t >= 0; t--) {
 			int offset = 0;
 			for (int i = displayStart; i <= displayStop; i++) {
@@ -306,7 +436,7 @@ public class Controller {
 		gcAnalyticsTwo.setTextAlign(TextAlignment.CENTER);
 		gcAnalyticsTwo.setTextBaseline(VPos.CENTER);
 
-		long trackOffset = (long) ((numSteps * 2) % canvasAnalyticsTwo.getHeight());
+		long trackOffset = (long) ((numSteps * street.length) % canvasAnalyticsTwo.getHeight());
 		for (int t = street.length - 1; t >= 0; t--) {
 			int offset = 0;
 			for (int i = displayStart; i <= displayStop; i++) {

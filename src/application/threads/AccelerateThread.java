@@ -1,17 +1,18 @@
 package application.threads;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import application.model.Car;
 
 public class AccelerateThread extends Thread {
 	private Master master;
 	private Car[][] street;
-	private int MAX_SPEED;
 	private Integer size;
 
-	public AccelerateThread(Master master, Car[][] street, int MAX_SPEED, Integer size) {
+	public AccelerateThread(Master master, Car[][] street, Integer size) {
 		this.master = master;
 		this.street = street;
-		this.MAX_SPEED = MAX_SPEED;
 		this.size = size;
 	}
 
@@ -25,23 +26,26 @@ public class AccelerateThread extends Thread {
 	}
 
 	private void accelerate(Integer index) {
-		for (int t = 0; t < street.length; t++) {
+		List<String> ids = new ArrayList<>();
+		for (int t = 0; t < street.length ; t++) {
 			for (int i = index; i <= index + size; i++) {
-				if(i>=street[0].length)
+				if (i >= street[0].length)
 					break;
 				Car c = street[t][i];
 				if (c != null) {
-					if (c.getSpeed() < MAX_SPEED) {
+					if (c.getSpeed() < c.getMaxSpeed()) {
 						c.setSpeed(c.getSpeed() + 1);
 					}
 					if (c.isChangeTrack()) {
-						if (street[1 - t][i] != null)
-							System.out.println("crash while changing tracks");
+						if (street[c.getTargetTrack()][i] != null)
+							System.out.println("crash while changing tracks:" + street[t][i] + "-->"
+									+ c.getTargetTrack()+"::"+ids.contains(t+".."+i));
+
+						ids.add(t+".."+i);
 						street[t][i].setChangeTrack(false);
-						street[1 - t][i] = street[t][i];
+						street[c.getTargetTrack()][i] = street[t][i];
 						street[t][i] = null;
 					}
-
 				}
 			}
 		}

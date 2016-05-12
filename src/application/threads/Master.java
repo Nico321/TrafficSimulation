@@ -15,7 +15,6 @@ public class Master {
 	private Integer numOfThreads;
 	private Car[][] street;
 	private Double c, p, p0;
-	private Car[][] originalStreet;
 	private Controller controller;
 	private Date startTime;
 	private Long numSteps;
@@ -36,7 +35,7 @@ public class Master {
 		this.index = streetSize;
 		this.rangeSize = rangeSize;
 		this.numOfThreads = numOfThreads;
-		this.setMAX_SPEED(MAX_SPEED);
+		this.MAX_SPEED = MAX_SPEED;
 		this.street = street;
 		this.controller = controller;
 		this.c = c;
@@ -50,26 +49,37 @@ public class Master {
 
 	public void startSimulation() {
 		this.index = 0;
-		
+
 		while (!pause && !stop) {
 			changeTracks();
 			accelerate();
 			breakCars();
 			dawdle();
-			copyArray();
 			move();
-			
+
 			this.numSteps++;
 			if (this.numSteps % framerate == 0)
 				controller.updateGraphics();
+
+			//countCars();
 		}
-		
+	}
+
+	private void countCars() {
+		int counter = 0;
+		for (int t = 0; t < street.length; t++) {
+			for (int i = 0; i < street[0].length; i++) {
+				if(street[t][i] != null)
+					counter++;
+			}
+		}
+		System.out.println(counter);
 	}
 
 	private void move() {
 		List<MoveThread> moveThreads = new ArrayList<>();
 		for (int i = 0; i < numOfThreads; i++) {
-			MoveThread t = new MoveThread(this, street, rangeSize, originalStreet, MAX_SPEED);
+			MoveThread t = new MoveThread(this, street, rangeSize);
 			t.start();
 			moveThreads.add(t);
 		}
@@ -80,25 +90,7 @@ public class Master {
 				e.printStackTrace();
 			}
 		}
-		this.index=0;
-	}
-
-	private void copyArray() {
-		this.originalStreet = new Car[street.length][street[0].length];
-		List<CopyArrayThread> copyThreads = new ArrayList<>();
-		for (int i = 0; i < numOfThreads; i++) {
-			CopyArrayThread t = new CopyArrayThread(street, originalStreet, i * (street[0].length / numOfThreads),
-					(i * (street[0].length / numOfThreads)) + (street[0].length / numOfThreads));
-			t.start();
-			copyThreads.add(t);
-		}
-		for (CopyArrayThread t : copyThreads) {
-			try {
-				t.join();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
+		this.index = 0;
 	}
 
 	private void dawdle() {
@@ -140,7 +132,7 @@ public class Master {
 	private void accelerate() {
 		List<AccelerateThread> accelerateThreads = new ArrayList<>();
 		for (int i = 0; i < numOfThreads; i++) {
-			AccelerateThread t = new AccelerateThread(this, street, MAX_SPEED, rangeSize);
+			AccelerateThread t = new AccelerateThread(this, street, rangeSize);
 			t.start();
 			accelerateThreads.add(t);
 		}
@@ -176,6 +168,10 @@ public class Master {
 		index += (rangeSize + 1);
 		return (index - (rangeSize + 1));
 	};
+
+	public synchronized void incrementRange(int index) {
+		this.index = index;
+	}
 
 	public void setIndex(Integer index) {
 		this.index = index;

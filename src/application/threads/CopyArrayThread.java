@@ -18,7 +18,7 @@ public class CopyArrayThread extends Thread {
 		for (int t = 0; t < street.length; t++) {
 			for (int i = start; i < stop && i < street[0].length; i++) {
 				if (street[t][i] != null) {
-					originalStreet[t][i] = new Car(street[t][i].getSpeed());
+					originalStreet[t][i] = new Car(street[t][i].getSpeed(),street[t][i].getMaxSpeed() );
 				}
 			}
 		}

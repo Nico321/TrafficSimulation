@@ -1,7 +1,6 @@
 package application.threads;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Date;
 
 import application.model.Car;
 
@@ -18,15 +17,20 @@ public class AccelerateThread extends Thread {
 
 	@Override
 	public void run() {
+		Long phi = 0L;
 		Integer index = master.getNextRange();
 		while (index < street[0].length) {
+			Date d = new Date();
 			accelerate(index);
+			phi += new Date().getTime() -d.getTime();
 			index = master.getNextRange();
 		}
+		master.addPhi(phi);
 	}
 
 	private void accelerate(Integer index) {
-		List<String> ids = new ArrayList<>();
+
+		
 		for (int t = 0; t < street.length ; t++) {
 			for (int i = index; i <= index + size; i++) {
 				if (i >= street[0].length)
@@ -39,9 +43,8 @@ public class AccelerateThread extends Thread {
 					if (c.isChangeTrack()) {
 						if (street[c.getTargetTrack()][i] != null)
 							System.out.println("crash while changing tracks:" + street[t][i] + "-->"
-									+ c.getTargetTrack()+"::"+ids.contains(t+".."+i));
+									+ c.getTargetTrack());
 
-						ids.add(t+".."+i);
 						street[t][i].setChangeTrack(false);
 						street[c.getTargetTrack()][i] = street[t][i];
 						street[t][i] = null;

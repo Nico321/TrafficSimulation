@@ -155,6 +155,7 @@ public class Controller {
 
 	@FXML
 	private void simulate() {
+		Date start = new Date();
 
 		disableAll();
 
@@ -204,7 +205,7 @@ public class Controller {
 				if (master == null)
 
 					master = new Master(street[0].length, numPerThread, numThreads, c, street, MAX_SPEED, p, p0,
-							controller, framerate);
+							controller, framerate, new Date().getTime()-start.getTime());
 
 				master.startSimulation();
 			}

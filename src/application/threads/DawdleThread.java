@@ -1,5 +1,6 @@
 package application.threads;
 
+import java.util.Date;
 import java.util.Random;
 
 import application.model.Car;
@@ -20,11 +21,15 @@ public class DawdleThread extends Thread {
 
 	@Override
 	public void run() {
+		Long phi = 0L;
 		Integer index = master.getNextRange();
 		while (index < street[0].length) {
+			Date d = new Date();
 			dawdleCars(index);
+			phi += new Date().getTime() -d.getTime();
 			index = master.getNextRange();
 		}
+		master.addPhi(phi);
 	}
 
 	private void dawdleCars(Integer index) {

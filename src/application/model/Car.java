@@ -5,7 +5,7 @@ import java.io.Serializable;
 public class Car implements Serializable{
 	private static final long serialVersionUID = 1L;
 	
-	private int speed, maxSpeed, targetTrack, moved=0;
+	private int speed, maxSpeed, targetTrack, moved=0, id;
 	private boolean changeTrack = false;
 
 	public Car(int speed, int maxSpeed){
@@ -55,6 +55,14 @@ public class Car implements Serializable{
 
 	public void incrementSpeed() {
 		this.speed++;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
 	}
 
 }

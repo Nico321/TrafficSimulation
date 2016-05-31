@@ -64,6 +64,7 @@ public class Master {
 	public void startSimulation() {
 		this.index = 0;
 		
+		System.out.println("-------Simulation--------");
 		while (!pause && !stop && ( anzIteration == -1 || numSteps<anzIteration)) {
 //			changeTracks();
 			
@@ -85,11 +86,12 @@ public class Master {
 
 			//countCars();
 		}
+		System.out.println("-------Finished----------");
 		
+		if(controller!=null)
+			controller.setAnalytics(sigma, phi, kappa);
 		
-		controller.setAnalytics(sigma, phi, kappa);
-		
-		if(numSteps>=anzIteration && anzIteration != -1)
+		if(controller !=null && numSteps>=anzIteration && anzIteration != -1)
 			controller.stopSimulation();
 	}
 

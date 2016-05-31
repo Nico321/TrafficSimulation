@@ -26,23 +26,19 @@ public class AccelerateBreakDawdleChangeTrackThread extends Thread {
 	public void run() {
 		Integer index = master.getNextRange();
 		while (index < street[0].length) {
-			accelerate(index);
-			index = master.getNextRange();
-		}
-	}
+			for (int t = 0; t < street.length; t++) {
+				for (int i = index; i <= index + size; i++) {
 
-	private void accelerate(Integer index) {
-		for (int t = 0; t < street.length; t++) {
-			for (int i = index; i <= index + size; i++) {
+					if (i >= street[0].length)
+						break;
 
-				if (i >= street[0].length)
-					break;
-
-				changeTrackCar(t, i);
-				accelerateCar(t, i);
-				breakCar(t, i);
-				dawdleCar(t, i);
+					changeTrackCar(t, i);
+					accelerateCar(t, i);
+					breakCar(t, i);
+					dawdleCar(t, i);
+				}
 			}
+			index = master.getNextRange();
 		}
 	}
 

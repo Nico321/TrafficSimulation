@@ -20,9 +20,9 @@ public class Master {
 	private Long numSteps;
 	private boolean pause = false, stop = false;
 	private Integer framerate;
-	
-	private Long sigma,phi,kappa;
-	private Integer potNumOfThreads, anzIteration;
+
+	private Long sigma, phi, kappa;
+	private Integer anzIteration;
 
 	public Integer getFramerate() {
 		return framerate;
@@ -33,10 +33,11 @@ public class Master {
 	}
 
 	public Master(int streetSize, int rangeSize, int numOfThreads, Double c, Car[][] street, Integer MAX_SPEED,
-			Double p, Double p0, Controller controller, Integer framerate, Long sigma, Integer potNumOfThreads, Integer anzIteration) {
-		
+			Double p, Double p0, Controller controller, Integer framerate, Long sigma,
+			Integer anzIteration) {
+
 		Date startConstructDate = new Date();
-		
+
 		this.setStreetSize(streetSize);
 		this.index = streetSize;
 		this.rangeSize = rangeSize;
@@ -51,59 +52,36 @@ public class Master {
 		this.startTime = new Date();
 		this.numSteps = 0L;
 		this.framerate = framerate;
-		
+
 		this.kappa = 0L;
 		this.phi = 0L;
-		
-		this.potNumOfThreads = potNumOfThreads;
+
 		this.anzIteration = anzIteration;
-		
-		this.sigma = sigma + new Date().getTime()-startConstructDate.getTime();
+
+		this.sigma = sigma + new Date().getTime() - startConstructDate.getTime();
 	}
 
 	public void startSimulation() {
 		this.index = 0;
-		
-		System.out.println("-------Simulation--------");
-		while (!pause && !stop && ( anzIteration == -1 || numSteps<anzIteration)) {
-//			changeTracks();
-			
-			accelerateBreakAndDawdle();
-			
-//			accelerate();
-//			breakCars();
-//			dawdle();
-			
+
+		while (!pause && !stop && (anzIteration == -1 || numSteps < anzIteration)) {
+			accelerateBreakDawdleAndChangeTrack();
 			move();
 
 			Date d = new Date();
-			
+
 			this.numSteps++;
 			if (this.numSteps % framerate == 0)
 				controller.updateGraphics();
-			
+
 			sigma += new Date().getTime() - d.getTime();
-
-			//countCars();
 		}
-		System.out.println("-------Finished----------");
-		
-		if(controller!=null)
+
+		if (controller != null)
 			controller.setAnalytics(sigma, phi, kappa);
-		
-		if(controller !=null && numSteps>=anzIteration && anzIteration != -1)
-			controller.stopSimulation();
-	}
 
-	private void countCars() {
-		int counter = 0;
-		for (int t = 0; t < street.length; t++) {
-			for (int i = 0; i < street[0].length; i++) {
-				if(street[t][i] != null)
-					counter++;
-			}
-		}
-		System.out.println(counter);
+		if (controller != null && numSteps >= anzIteration && anzIteration != -1)
+			controller.stopSimulation();
 	}
 
 	private void move() {
@@ -114,7 +92,7 @@ public class Master {
 			t.start();
 			moveThreads.add(t);
 		}
-		
+
 		this.kappa += new Date().getTime() - d.getTime();
 		d = new Date();
 		for (MoveThread t : moveThreads) {
@@ -125,91 +103,23 @@ public class Master {
 			}
 		}
 		this.index = 0;
-		this.addPhi(new Date().getTime()-d.getTime());
+		this.addPhi(new Date().getTime() - d.getTime());
 	}
 
-	private void dawdle() {
+	private void accelerateBreakDawdleAndChangeTrack() {
 		Date d = new Date();
-		
-		List<DawdleThread> dawdleThreads = new ArrayList<>();
-		for (int i = 0; i < numOfThreads; i++) {
-			DawdleThread t = new DawdleThread(this, street, rangeSize, p, p0);
-			t.start();
-			dawdleThreads.add(t);
-		}
-		
-		this.kappa += new Date().getTime() - d.getTime();
-		d = new Date();
-		for (DawdleThread t : dawdleThreads) {
-			try {
-				t.join();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-		this.index = 0;
-		this.addPhi(new Date().getTime()-d.getTime());
-	}
 
-	private void breakCars() {
-		Date d = new Date();
-		
-		List<BreakThread> breakThreads = new ArrayList<>();
+		List<AccelerateBreakDawdleChangeTrackThread> threads = new ArrayList<>();
 		for (int i = 0; i < numOfThreads; i++) {
-			BreakThread t = new BreakThread(this, street, rangeSize);
-			t.start();
-			breakThreads.add(t);
-		}
-		
-		this.kappa += new Date().getTime() - d.getTime();
-		d = new Date();
-		for (BreakThread t : breakThreads) {
-			try {
-				t.join();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-		this.index = 0;
-		this.addPhi(new Date().getTime()-d.getTime());
-	}
-
-	private void accelerate() {
-		Date d = new Date();
-		
-		List<AccelerateThread> accelerateThreads = new ArrayList<>();
-		for (int i = 0; i < numOfThreads; i++) {
-			AccelerateThread t = new AccelerateThread(this, street, rangeSize);
-			t.start();
-			accelerateThreads.add(t);
-		}
-		
-		this.kappa += new Date().getTime() - d.getTime();
-		d = new Date();
-		for (AccelerateThread t : accelerateThreads) {
-			try {
-				t.join();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-		this.index = 0;
-		this.addPhi(new Date().getTime()-d.getTime());
-	}
-
-	private void accelerateBreakAndDawdle() {
-Date d = new Date();
-		
-		List<AccelerateBreakDawdleThread> threads = new ArrayList<>();
-		for (int i = 0; i < numOfThreads; i++) {
-			AccelerateBreakDawdleThread t = new AccelerateBreakDawdleThread(this, street, rangeSize, p, p0, MAX_SPEED, c);
+			AccelerateBreakDawdleChangeTrackThread t = new AccelerateBreakDawdleChangeTrackThread(this, street,
+					rangeSize, p, p0, MAX_SPEED, c);
 			t.start();
 			threads.add(t);
 		}
-		
+
 		this.kappa += new Date().getTime() - d.getTime();
 		d = new Date();
-		for (AccelerateBreakDawdleThread t : threads) {
+		for (AccelerateBreakDawdleChangeTrackThread t : threads) {
 			try {
 				t.join();
 			} catch (InterruptedException e) {
@@ -217,45 +127,23 @@ Date d = new Date();
 			}
 		}
 		this.index = 0;
-		this.addPhi(new Date().getTime()-d.getTime());
+		this.addPhi(new Date().getTime() - d.getTime());
 	}
 
-	private void changeTracks() {
-		Date d = new Date();
-		List<ChangeTrackThread> changeTrackThreads = new ArrayList<>();
-		for (int i = 0; i < numOfThreads; i++) {
-			ChangeTrackThread t = new ChangeTrackThread(this, street, c, rangeSize, MAX_SPEED);
-			t.start();
-			changeTrackThreads.add(t);
-		}
-		
-		this.kappa += new Date().getTime() - d.getTime();
-		d = new Date();
-		for (ChangeTrackThread t : changeTrackThreads) {
-			try {
-				t.join();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-		this.index = 0;
-		this.addPhi(new Date().getTime()-d.getTime());
-	}
-	
-	public synchronized void addPhi(Long p){
+	public synchronized void addPhi(Long p) {
 		this.phi += p;
 	}
 
 	public synchronized Integer getNextRange() {
 		Date d = new Date();
-		
+
 		index += (rangeSize + 1);
 		Integer returnVal = (index - (rangeSize + 1));
-		
+
 		Long duration = new Date().getTime() - d.getTime();
 		this.kappa += duration;
 		this.phi -= duration;
-		
+
 		return returnVal;
 	};
 

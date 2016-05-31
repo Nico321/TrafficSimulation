@@ -32,7 +32,7 @@ public class TrafficTest {
 		street[0][9].setId(5);
 		
 		printStreet(street);
-		master = new Master(street[0].length, 5, 4, 1.0, street, max_speed, 0.0, 0.0, null, 100, 0L, 4, 1);
+		master = new Master(street[0].length, 5, 4, 1.0, street, max_speed, 0.0, 0.0, null, 100, 0L, 1);
 		master.startSimulation();
 
 
@@ -71,7 +71,7 @@ public class TrafficTest {
 		street[0][9].setId(5);
 		
 		printStreet(street);
-		master = new Master(street[0].length, 5, 4, 1.0, street, max_speed, 1.0, 1.0, null, 100, 0L, 4, 1);
+		master = new Master(street[0].length, 5, 4, 1.0, street, max_speed, 1.0, 1.0, null, 100, 0L, 1);
 		master.startSimulation();
 
 

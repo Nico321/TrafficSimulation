@@ -4,14 +4,14 @@ import java.util.Random;
 
 import application.model.Car;
 
-public class AccelerateBreakDawdleThread extends Thread {
+public class AccelerateBreakDawdleChangeTrackThread extends Thread {
 	private Master master;
 	private Car[][] street;
 	private Integer size, MAX_SPEED;
 	private Double p, p0, c;
 	private Random random = new Random();
 
-	public AccelerateBreakDawdleThread(Master master, Car[][] street, Integer size, Double p, Double p0,
+	public AccelerateBreakDawdleChangeTrackThread(Master master, Car[][] street, Integer size, Double p, Double p0,
 			Integer MAX_SPEED, Double c) {
 		this.master = master;
 		this.street = street;

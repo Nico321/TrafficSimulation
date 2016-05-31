@@ -53,4 +53,8 @@ public class Car implements Serializable{
 		this.moved = moved;
 	}
 
+	public void incrementSpeed() {
+		this.speed++;
+	}
+
 }

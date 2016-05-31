@@ -1,6 +1,5 @@
 package application.threads;
 
-import java.util.Date;
 import java.util.Random;
 
 import application.model.Car;
@@ -11,25 +10,23 @@ public class ChangeTrackThread extends Thread {
 	private Car[][] street;
 	private Double c;
 	private Integer size;
+	private Integer MAX_SPEED;
 
-	public ChangeTrackThread(Master master, Car[][] street, Double c, Integer size) {
+	public ChangeTrackThread(Master master, Car[][] street, Double c, Integer size, Integer MAX_SPEED) {
 		this.master = master;
 		this.street = street;
 		this.c = c;
 		this.size = size;
+		this.MAX_SPEED = MAX_SPEED;
 	}
 
 	@Override
 	public void run() {
-		Long phi = 0L;
 		Integer index = master.getNextRange();
 		while (index < street[0].length) {
-			Date d = new Date();
 			changeTrack(index);
-			phi += new Date().getTime() -d.getTime();
 			index = master.getNextRange();
 		}
-		master.addPhi(phi);
 	}
 
 	private void changeTrack(Integer index) {
@@ -40,12 +37,11 @@ public class ChangeTrackThread extends Thread {
 				if (street[t][i] != null && street[t][i].getSpeed() > 0) {
 					if (street[t][i] != null) {
 						if (t > 0 && checkTrackChange(i, t, t - 1)) {
-							street[t][i].setChangeTrack(true);
-							street[t][i].setTargetTrack(t - 1);
+							changeTrack(t, i, t - 1);
+
 						}
-						if (t < (street.length - 1) && checkTrackChange(i, t, t + 1)) {
-							street[t][i].setChangeTrack(true);
-							street[t][i].setTargetTrack(t + 1);
+						else if (t < (street.length - 1) && checkTrackChange(i, t, t + 1)) {
+							changeTrack(t, i, t + 1);
 						}
 					}
 				}
@@ -53,25 +49,17 @@ public class ChangeTrackThread extends Thread {
 		}
 	}
 
+	private void changeTrack(int t, int i, int targetTrack) {
+		if (street[targetTrack][i] != null)
+			System.out.println("crash while changing tracks:" + street[t][i] + "-->" + targetTrack+"-"+street[targetTrack][i]);
+		street[targetTrack][i] = street[t][i];
+		street[t][i] = null;
+	}
+
 	private boolean checkTrackChange(int pos, int currentTrack, int targetTrack) {
 		// check neighbour car
 		if (street[targetTrack][pos] != null)
 			return false;
-
-		if (targetTrack < street.length-1){
-			if(street[targetTrack + 1][pos] != null){
-				if(street[targetTrack + 1][pos].isChangeTrack() && street[targetTrack + 1][pos].getTargetTrack() == targetTrack)
-					return false;
-			}
-		}
-		
-		if (targetTrack > 0){
-			if(street[targetTrack - 1][pos] != null){
-				if(street[targetTrack - 1][pos].isChangeTrack() && street[targetTrack - 1][pos].getTargetTrack() == targetTrack){
-					return false;
-				}
-			}
-		}
 
 		boolean blockOnOwnStreet = false;
 
@@ -96,7 +84,7 @@ public class ChangeTrackThread extends Thread {
 				return false;
 
 			// check behind cars
-			for (int i = 1; i <= 5; i++) {
+			for (int i = 1; i <= MAX_SPEED; i++) {
 				int check = pos - i;
 				if (check < 0)
 					check += street[0].length;

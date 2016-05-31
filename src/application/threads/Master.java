@@ -22,6 +22,7 @@ public class Master {
 	private Integer framerate;
 	
 	private Long sigma,phi,kappa;
+	private Integer potNumOfThreads, anzIteration;
 
 	public Integer getFramerate() {
 		return framerate;
@@ -32,7 +33,7 @@ public class Master {
 	}
 
 	public Master(int streetSize, int rangeSize, int numOfThreads, Double c, Car[][] street, Integer MAX_SPEED,
-			Double p, Double p0, Controller controller, Integer framerate, Long sigma) {
+			Double p, Double p0, Controller controller, Integer framerate, Long sigma, Integer potNumOfThreads, Integer anzIteration) {
 		
 		Date startConstructDate = new Date();
 		
@@ -54,17 +55,24 @@ public class Master {
 		this.kappa = 0L;
 		this.phi = 0L;
 		
+		this.potNumOfThreads = potNumOfThreads;
+		this.anzIteration = anzIteration;
+		
 		this.sigma = sigma + new Date().getTime()-startConstructDate.getTime();
 	}
 
 	public void startSimulation() {
 		this.index = 0;
-
-		while (!pause && !stop) {
-			changeTracks();
-			accelerate();
-			breakCars();
-			dawdle();
+		
+		while (!pause && !stop && ( anzIteration == -1 || numSteps<anzIteration)) {
+//			changeTracks();
+			
+			accelerateBreakAndDawdle();
+			
+//			accelerate();
+//			breakCars();
+//			dawdle();
+			
 			move();
 
 			Date d = new Date();
@@ -77,12 +85,12 @@ public class Master {
 
 			//countCars();
 		}
-		System.out.println("Sigma: " + sigma);
-		System.out.println("Phi: " + phi);
-		System.out.println("Kappa: " + kappa);
-		System.out.println("SpeedUp: " + ((sigma.doubleValue()+phi.doubleValue())/(sigma.doubleValue()+(phi.doubleValue()/numOfThreads.doubleValue())+kappa.doubleValue())));
-		System.out.println("Effizienz: " + ((sigma.doubleValue()+phi.doubleValue())/(numOfThreads.doubleValue()*sigma.doubleValue()+phi.doubleValue()+numOfThreads.doubleValue()*kappa.doubleValue())));
-		System.out.println("Karp-Flatt: " + ((sigma.doubleValue()+kappa.doubleValue())/(sigma.doubleValue()+phi.doubleValue())));
+		
+		
+		controller.setAnalytics(sigma, phi, kappa);
+		
+		if(numSteps>=anzIteration && anzIteration != -1)
+			controller.stopSimulation();
 	}
 
 	private void countCars() {
@@ -106,7 +114,7 @@ public class Master {
 		}
 		
 		this.kappa += new Date().getTime() - d.getTime();
-		
+		d = new Date();
 		for (MoveThread t : moveThreads) {
 			try {
 				t.join();
@@ -115,6 +123,7 @@ public class Master {
 			}
 		}
 		this.index = 0;
+		this.addPhi(new Date().getTime()-d.getTime());
 	}
 
 	private void dawdle() {
@@ -128,7 +137,7 @@ public class Master {
 		}
 		
 		this.kappa += new Date().getTime() - d.getTime();
-		
+		d = new Date();
 		for (DawdleThread t : dawdleThreads) {
 			try {
 				t.join();
@@ -136,8 +145,8 @@ public class Master {
 				e.printStackTrace();
 			}
 		}
-
 		this.index = 0;
+		this.addPhi(new Date().getTime()-d.getTime());
 	}
 
 	private void breakCars() {
@@ -151,7 +160,7 @@ public class Master {
 		}
 		
 		this.kappa += new Date().getTime() - d.getTime();
-		
+		d = new Date();
 		for (BreakThread t : breakThreads) {
 			try {
 				t.join();
@@ -160,6 +169,7 @@ public class Master {
 			}
 		}
 		this.index = 0;
+		this.addPhi(new Date().getTime()-d.getTime());
 	}
 
 	private void accelerate() {
@@ -173,7 +183,7 @@ public class Master {
 		}
 		
 		this.kappa += new Date().getTime() - d.getTime();
-		
+		d = new Date();
 		for (AccelerateThread t : accelerateThreads) {
 			try {
 				t.join();
@@ -181,21 +191,44 @@ public class Master {
 				e.printStackTrace();
 			}
 		}
-
 		this.index = 0;
+		this.addPhi(new Date().getTime()-d.getTime());
+	}
+
+	private void accelerateBreakAndDawdle() {
+Date d = new Date();
+		
+		List<AccelerateBreakDawdleThread> threads = new ArrayList<>();
+		for (int i = 0; i < numOfThreads; i++) {
+			AccelerateBreakDawdleThread t = new AccelerateBreakDawdleThread(this, street, rangeSize, p, p0, MAX_SPEED, c);
+			t.start();
+			threads.add(t);
+		}
+		
+		this.kappa += new Date().getTime() - d.getTime();
+		d = new Date();
+		for (AccelerateBreakDawdleThread t : threads) {
+			try {
+				t.join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		this.index = 0;
+		this.addPhi(new Date().getTime()-d.getTime());
 	}
 
 	private void changeTracks() {
 		Date d = new Date();
 		List<ChangeTrackThread> changeTrackThreads = new ArrayList<>();
 		for (int i = 0; i < numOfThreads; i++) {
-			ChangeTrackThread t = new ChangeTrackThread(this, street, c, rangeSize);
+			ChangeTrackThread t = new ChangeTrackThread(this, street, c, rangeSize, MAX_SPEED);
 			t.start();
 			changeTrackThreads.add(t);
 		}
 		
 		this.kappa += new Date().getTime() - d.getTime();
-		
+		d = new Date();
 		for (ChangeTrackThread t : changeTrackThreads) {
 			try {
 				t.join();
@@ -204,6 +237,7 @@ public class Master {
 			}
 		}
 		this.index = 0;
+		this.addPhi(new Date().getTime()-d.getTime());
 	}
 	
 	public synchronized void addPhi(Long p){
@@ -216,7 +250,9 @@ public class Master {
 		index += (rangeSize + 1);
 		Integer returnVal = (index - (rangeSize + 1));
 		
-		this.kappa += new Date().getTime() - d.getTime();
+		Long duration = new Date().getTime() - d.getTime();
+		this.kappa += duration;
+		this.phi -= duration;
 		
 		return returnVal;
 	};

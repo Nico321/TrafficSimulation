@@ -1,7 +1,5 @@
 package application.threads;
 
-import java.util.Date;
-
 import application.model.Car;
 
 public class MoveThread extends Thread {
@@ -18,15 +16,11 @@ public class MoveThread extends Thread {
 
 	@Override
 	public void run() {
-		Long phi = 0L;
 		Integer index = master.getNextRange();
 		while (index < street[0].length) {
-			Date d = new Date();
 			moveCars(index);
-			phi += new Date().getTime() -d.getTime();
 			index = master.getNextRange();
 		}
-		master.addPhi(phi);
 	}
 
 	private void moveCars(Integer index) {

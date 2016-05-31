@@ -32,8 +32,8 @@ public class Controller {
 	@FXML
 	private TextField tfp0;
 	@FXML
-	private TextField tfdichte, tfDichteAbs, tfNumPerThread, tfNumThreads, tfTracks;
-	private Integer numPerThread, numThreads;
+	private TextField tfdichte, tfDichteAbs, tfNumPerThread, tfNumThreads, tfTracks, tfPotNumOfThreads, tfAnzIter;
+	private Integer numPerThread, numThreads, potNumThreads, anzIteration;
 	@FXML
 	private TextField tfsize;
 	@FXML
@@ -50,7 +50,7 @@ public class Controller {
 	private Double c;
 
 	@FXML
-	private Label lblNumSteps, lblAvgTime;
+	private Label lblNumSteps, lblAvgTime, lblSpeedUp, lblKarp, lblEffizienz, lblSigma, lblPhi, lblKappa, lblSumTime, lblTs, lblTp, lblSerialFraction, lblPotPar, lblTpAmdahl, lblSAmdahl, lblFStrich, lblScaledSpeedUp;
 
 	@FXML
 	private RadioButton rbDichteProz, rbDichteAbs;
@@ -65,7 +65,7 @@ public class Controller {
 	private Canvas canvasAnalyticsOne, canvasAnalyticsTwo;
 
 	@FXML
-	private CheckBox showLive, showAnalyticsOne, showAnalyticsTwo, chkMaxSpeedPerCar;
+	private CheckBox showLive, showAnalyticsOne, showAnalyticsTwo, chkMaxSpeedPerCar, chkEndless;
 
 	@FXML
 	private TextField tfFramerate;
@@ -106,6 +106,13 @@ public class Controller {
 		tfMaxSpeed.setDisable(true);
 		tfCarSize.setDisable(false);
 		tfFramerate.setDisable(false);
+		tfPotNumOfThreads.setDisable(true);
+		chkEndless.setDisable(true);
+		tfAnzIter.setDisable(true);
+	}
+
+	public void stopSimulation() {
+		this.stop();
 	}
 
 	@FXML
@@ -140,6 +147,10 @@ public class Controller {
 		tfFramerate.setDisable(false);
 		tfNumPerThread.setDisable(false);
 		tfNumThreads.setDisable(false);
+		tfPotNumOfThreads.setDisable(false);
+		chkEndless.setDisable(false);
+		if (!chkEndless.isSelected())
+			tfAnzIter.setDisable(false);
 	}
 
 	@FXML
@@ -186,8 +197,13 @@ public class Controller {
 			if (!tfDichteAbs.getText().equals(""))
 				dichteAbs = Long.parseLong(tfDichteAbs.getText());
 			numThreads = Integer.parseInt(tfNumThreads.getText());
+			potNumThreads = Integer.parseInt(tfPotNumOfThreads.getText());
 			numPerThread = Integer.parseInt(tfNumPerThread.getText());
 			numTracks = Integer.parseInt(tfTracks.getText());
+			if (!chkEndless.isSelected())
+				anzIteration = Integer.parseInt(tfAnzIter.getText());
+			else
+				anzIteration = -1;
 
 			MAX_SPEED = Integer.parseInt(tfMaxSpeed.getText());
 			size = Integer.parseInt(tfsize.getText());
@@ -205,7 +221,7 @@ public class Controller {
 				if (master == null)
 
 					master = new Master(street[0].length, numPerThread, numThreads, c, street, MAX_SPEED, p, p0,
-							controller, framerate, new Date().getTime()-start.getTime());
+							controller, framerate, new Date().getTime() - start.getTime(), potNumThreads, anzIteration);
 
 				master.startSimulation();
 			}
@@ -231,6 +247,9 @@ public class Controller {
 		tfNumThreads.setDisable(true);
 		tfTracks.setDisable(true);
 		chkMaxSpeedPerCar.setDisable(true);
+		tfPotNumOfThreads.setDisable(true);
+		tfAnzIter.setDisable(true);
+		chkEndless.setDisable(true);
 	}
 
 	public void updateGraphics() {
@@ -356,7 +375,7 @@ public class Controller {
 			size = Integer.parseInt(tfsize.getText());
 
 			street = new Car[numTracks][size];
-			
+
 			if (rbDichteProz.isSelected())
 				initDichteProz();
 			else
@@ -375,8 +394,13 @@ public class Controller {
 			int t = random.nextInt((1 - 0) + 1);
 			int pos = random.nextInt(size);
 			if (street[t][pos] == null) {
-				int carMaxSpeed = random.nextInt((MAX_SPEED - 1) + 1) + 1;
-				street[t][pos] = new Car(random.nextInt((carMaxSpeed - 1) + 1) + 1, carMaxSpeed);
+				if(chkMaxSpeedPerCar.isSelected()){
+					int carMaxSpeed = random.nextInt((MAX_SPEED - 1) + 1) + 1;
+					street[t][pos] = new Car(random.nextInt((carMaxSpeed - 1) + 1) + 1, carMaxSpeed);
+				}else{
+					street[t][pos] = new Car(random.nextInt((MAX_SPEED - 1) + 1) + 1, MAX_SPEED);
+				}
+
 				dichteAbs--;
 			}
 		}
@@ -386,9 +410,13 @@ public class Controller {
 		Random random = new Random();
 		for (int t = 0; t < street.length; t++) {
 			for (int i = 0; i < size; i++) {
-				if (random.nextFloat() < dichte) {
-					int carMaxSpeed = random.nextInt((MAX_SPEED - 1) + 1) + 1;
-					street[t][i] = new Car(random.nextInt((carMaxSpeed - 1) + 1) + 1, carMaxSpeed);
+				if (random.nextFloat() <= dichte) {
+					if(chkMaxSpeedPerCar.isSelected()){
+						int carMaxSpeed = random.nextInt((MAX_SPEED - 1) + 1) + 1;
+						street[t][i] = new Car(random.nextInt((carMaxSpeed - 1) + 1) + 1, carMaxSpeed);
+					}else{
+						street[t][i] = new Car(random.nextInt((MAX_SPEED - 1) + 1) + 1, MAX_SPEED);
+					}
 				}
 			}
 		}
@@ -527,6 +555,54 @@ public class Controller {
 		lblAvgTime.setText(
 				"Avg. Time (ms): " + ((new Date().getTime() - master.getStartTime().getTime()) / master.getNumSteps()));
 
+	}
+
+	public void setAnalytics(Long sigma, Long phi, Long kappa) {
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				
+				Double speedUp = (sigma.doubleValue()+phi.doubleValue())/(sigma.doubleValue()+(phi.doubleValue()/potNumThreads.doubleValue())+kappa.doubleValue());
+				Double effizenz = (sigma.doubleValue()+phi.doubleValue())/(potNumThreads.doubleValue()*sigma.doubleValue()+phi.doubleValue()+potNumThreads.doubleValue()*kappa.doubleValue());
+				Double karp = (sigma.doubleValue()+kappa.doubleValue())/(sigma.doubleValue()+phi.doubleValue());
+				Double serialFraction = (sigma.doubleValue())/(sigma.doubleValue()+phi.doubleValue()); //Serieller Anzeil
+				Double f = phi.doubleValue()/(sigma.doubleValue()+phi.doubleValue()); //Potenziell Parallel ausführbare Zeit
+				Double ts = sigma.doubleValue()+phi.doubleValue(); //Sequentielle Laufzeit
+				Double tp = sigma.doubleValue()+(phi.doubleValue()/potNumThreads.doubleValue())+kappa.doubleValue(); //Parallele Ausführungszeit
+				Double tpAmdahl = ts * ((1-f)+(f/potNumThreads.doubleValue())); //Parallele Ausführungszeit nach Amdahlschen Gesetz
+				Double sAmdahl = ts/tpAmdahl;
+				Double fStrich = phi.doubleValue()/(potNumThreads.doubleValue()*sigma.doubleValue()+phi.doubleValue());
+				Double scaledSpeedUp = (1.0-fStrich)+potNumThreads.doubleValue()*fStrich;
+				
+				lblSigma.setText("Sigma= " + sigma);
+				lblPhi.setText("Phi= " + phi);
+				lblKappa.setText("Kappa= " + kappa);
+				lblSumTime.setText("Gesamt= " + (sigma + phi + kappa));
+				lblSpeedUp.setText("SpeedUp= " + speedUp);
+				lblEffizienz.setText("Effizenz= " + effizenz);
+				lblTs.setText("Ts= " + ts);
+				lblTp.setText("Tp= " + tp);
+				lblSerialFraction.setText("Serial Fraction= " + serialFraction);
+				lblPotPar.setText("Pot. par. Anteil= " + f);
+				
+				lblTpAmdahl.setText("Tp= " + tpAmdahl);
+				lblSAmdahl.setText("S= " + sAmdahl);
+				
+				lblFStrich.setText("f'= " + fStrich);
+				lblScaledSpeedUp.setText("S= " + scaledSpeedUp);
+				
+				lblKarp.setText("e= " + karp);
+			}
+		});
+	}
+
+	@FXML
+	private void changeEndless() {
+		if (chkEndless.isSelected()) {
+			tfAnzIter.setDisable(true);
+		} else {
+			tfAnzIter.setDisable(false);
+		}
 	}
 
 }

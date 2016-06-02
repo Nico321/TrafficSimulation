@@ -1,8 +1,6 @@
 package application.threads;
 
-import java.util.Random;
 import java.util.SplittableRandom;
-
 import application.model.Car;
 
 public class AccelerateBreakDawdleChangeTrackThread extends Thread {
@@ -10,7 +8,9 @@ public class AccelerateBreakDawdleChangeTrackThread extends Thread {
 	private Car[][] street;
 	private Integer size, MAX_SPEED;
 	private Double p, p0, c;
+
 	private SplittableRandom random = new SplittableRandom();
+
 
 	public AccelerateBreakDawdleChangeTrackThread(Master master, Car[][] street, Integer size, Double p, Double p0,
 			Integer MAX_SPEED, Double c) {
@@ -110,6 +110,7 @@ public class AccelerateBreakDawdleChangeTrackThread extends Thread {
 
 		// Check track change possibility
 		if (random.nextDouble() < c) {
+
 
 			// check previous cars
 			for (int i = 1; i <= street[currentTrack][pos].getSpeed() + 1; i++) {

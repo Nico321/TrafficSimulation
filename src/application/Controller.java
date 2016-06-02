@@ -566,18 +566,21 @@ public class Controller {
 				Double effizenz = (sigma.doubleValue()+phi.doubleValue())/(potNumThreads.doubleValue()*sigma.doubleValue()+phi.doubleValue()+potNumThreads.doubleValue()*kappa.doubleValue());
 				Double karp = (sigma.doubleValue()+kappa.doubleValue())/(sigma.doubleValue()+phi.doubleValue());
 				Double serialFraction = (sigma.doubleValue())/(sigma.doubleValue()+phi.doubleValue()); //Serieller Anzeil
-				Double f = phi.doubleValue()/(sigma.doubleValue()+phi.doubleValue()); //Potenziell Parallel ausf�hrbare Zeit
+
+				Double f = phi.doubleValue()/(sigma.doubleValue()+phi.doubleValue()); //Potenziell Parallel ausführbare Zeit
 				Double ts = sigma.doubleValue()+phi.doubleValue(); //Sequentielle Laufzeit
-				Double tp = sigma.doubleValue()+(phi.doubleValue()/potNumThreads.doubleValue())+kappa.doubleValue(); //Parallele Ausf�hrungszeit
-				Double tpAmdahl = ts * ((1-f)+(f/potNumThreads.doubleValue())); //Parallele Ausf�hrungszeit nach Amdahlschen Gesetz
+				Double tp = sigma.doubleValue()+(phi.doubleValue()/potNumThreads.doubleValue())+kappa.doubleValue(); //Parallele Ausführungszeit
+				Double tpAmdahl = ts * ((1-f)+(f/potNumThreads.doubleValue())); //Parallele Ausführungszeit nach Amdahlschen Gesetz
+
 				Double sAmdahl = ts/tpAmdahl;
 				Double fStrich = phi.doubleValue()/(potNumThreads.doubleValue()*sigma.doubleValue()+phi.doubleValue());
 				Double scaledSpeedUp = (1.0-fStrich)+potNumThreads.doubleValue()*fStrich;
-				
+
 				lblSigma.setText("Sigma= " + sigma + " ms");
 				lblPhi.setText("Phi= " + phi + " ms");
 				lblKappa.setText("Kappa= " + kappa + " ms");
 				lblSumTime.setText("Gesamt= " + (sigma + phi + kappa + " ms"));
+
 				lblSpeedUp.setText("SpeedUp= " + speedUp);
 				lblEffizienz.setText("Effizenz= " + effizenz);
 				lblTs.setText("Ts= " + ts);

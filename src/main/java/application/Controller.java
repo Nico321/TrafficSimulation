@@ -75,6 +75,7 @@ public class Controller {
 	private Controller controller = this;
 	private Master master;
 	private int numTracks;
+	private Car loadedStreet[][];
 
 	@FXML
 	private void pause() {
@@ -281,6 +282,17 @@ public class Controller {
 					btnLoadArray.setDisable(true);
 					btnSaveArray.setDisable(false);
 					btnDiscardArray.setDisable(false);
+
+
+					loadedStreet = new Car[street.length][street[0].length];
+					for (int t = 0; t < street.length; t++) {
+						for (int i = 0; i < street[0].length; i++) {
+							if (street[t][i] != null) {
+								loadedStreet[t][i] = new Car(street[t][i].getSpeed(), street[t][i].getMaxSpeed());
+							}
+						}
+					}
+
 					Platform.runLater(new Runnable() {
 						@Override
 						public void run() {
@@ -371,6 +383,15 @@ public class Controller {
 				initDichteProz();
 			else
 				initDichteAbs();
+		} else {
+			street = new Car[loadedStreet.length][loadedStreet[0].length];
+			for (int t = 0; t < loadedStreet.length; t++) {
+				for (int i = 0; i < loadedStreet[0].length; i++) {
+					if (loadedStreet[t][i] != null) {
+						street[t][i] = new Car(loadedStreet[t][i].getSpeed(), loadedStreet[t][i].getMaxSpeed());
+					}
+				}
+			}
 		}
 
 		canSaveArray = true;

@@ -1,11 +1,11 @@
 package application.threads;
 
+import application.Controller;
+import application.model.Car;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import application.Controller;
-import application.model.Car;
 
 public class Master {
 	private volatile Integer index;
@@ -23,14 +23,6 @@ public class Master {
 
 	private Long sigma, phi, kappa;
 	private Integer anzIteration;
-
-	public Integer getFramerate() {
-		return framerate;
-	}
-
-	public void setFramerate(Integer framerate) {
-		this.framerate = framerate;
-	}
 
 	public Master(int streetSize, int rangeSize, int numOfThreads, Double c, Car[][] street, Integer MAX_SPEED,
 			Double p, Double p0, Controller controller, Integer framerate, Long sigma,
@@ -59,6 +51,14 @@ public class Master {
 		this.anzIteration = anzIteration;
 
 		this.sigma = sigma + new Date().getTime() - startConstructDate.getTime();
+	}
+
+	public Integer getFramerate() {
+		return framerate;
+	}
+
+	public void setFramerate(Integer framerate) {
+		this.framerate = framerate;
 	}
 
 	public void startSimulation() {
@@ -145,7 +145,7 @@ public class Master {
 		this.phi -= duration;
 
 		return returnVal;
-	};
+	}
 
 	public synchronized void incrementRange(int index) {
 		this.index = index;

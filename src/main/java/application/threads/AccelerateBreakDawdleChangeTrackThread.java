@@ -1,7 +1,8 @@
 package application.threads;
 
-import java.util.SplittableRandom;
 import application.model.Car;
+
+import java.util.SplittableRandom;
 
 public class AccelerateBreakDawdleChangeTrackThread extends Thread {
 	private Master master;
@@ -47,7 +48,6 @@ public class AccelerateBreakDawdleChangeTrackThread extends Thread {
 		if (street[t][i] != null) {
 			if (street[t][i].getSpeed() < street[t][i].getMaxSpeed()) {
 				street[t][i].incrementSpeed();
-				;
 			}
 		}
 	}

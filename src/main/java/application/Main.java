@@ -24,8 +24,8 @@ public class Main extends Application {
 		try {
 			// Load root layout from fxml file.
 			FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(getClass().getClassLoader().getResource("view/SimulationOverview.fxml"));
-            rootLayout = loader.load();
+			loader.setLocation(Main.class.getResource("view/SimulationOverview.fxml"));
+			rootLayout = loader.load();
 
 			// Show the scene containing the root layout.
 			Scene scene = new Scene(rootLayout);

@@ -2,29 +2,32 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="19d3cb0b-b4e6-41eb-ad69-03b72ef6b453" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/bin/application/Controller$1.class" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/bin/application/Controller$2.class" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/bin/application/Controller$3$1.class" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/bin/application/Controller$3.class" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/bin/application/Controller$4$1.class" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/bin/application/Controller$4.class" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/bin/application/Controller$5$1.class" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/bin/application/Controller$5.class" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/bin/application/Controller.class" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/bin/application/Main.class" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/bin/application/model/Car.class" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/bin/application/stau.png" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/bin/application/threads/Master.class" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/bin/application/threads/MoveThread.class" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.gitignore" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/bin/application/application.css" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/bin/application/view/SimulationOverview.fxml" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/classes/application/Controller$1.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/classes/application/Controller$2.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/classes/application/Controller$3$1.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/classes/application/Controller$3.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/classes/application/Controller$4$1.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/classes/application/Controller$4.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/classes/application/Controller$5$1.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/classes/application/Controller$5.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/classes/application/Controller$6.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/classes/application/Controller.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/classes/application/Main.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/classes/application/application.css" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/classes/application/model/Car.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/classes/application/stau.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/classes/application/threads/AccelerateBreakDawdleChangeTrackThread.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/classes/application/threads/Master.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/classes/application/threads/MoveThread.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/classes/application/view/SimulationOverview.fxml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/jfx/app/traffic-simulation-1.0-jfx.jar" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-TrafficTest.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/surefire-reports/TrafficTest.txt" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/target/test-classes/TrafficTest.class" afterPath="" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/traffic-simulation-1.0.jar" afterPath="$PROJECT_DIR$/target/traffic-simulation-1.0.jar" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gitignore" afterPath="$PROJECT_DIR$/.gitignore" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/application/Controller.java" afterPath="$PROJECT_DIR$/src/application/Controller.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/application/threads/AccelerateBreakDawdleChangeTrackThread.java" afterPath="$PROJECT_DIR$/src/application/threads/AccelerateBreakDawdleChangeTrackThread.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/application/view/SimulationOverview.fxml" afterPath="$PROJECT_DIR$/src/application/view/SimulationOverview.fxml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-TrafficTest.xml" afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-TrafficTest.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/surefire-reports/TrafficTest.txt" afterPath="$PROJECT_DIR$/target/surefire-reports/TrafficTest.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/maven-archiver/pom.properties" afterPath="$PROJECT_DIR$/target/maven-archiver/pom.properties" />
     </list>
     <ignored path="TrafficSimulationM.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -77,6 +80,7 @@
         <option value="$PROJECT_DIR$/src/application/threads/AccelerateBreakDawdleChangeTrackThread.java" />
         <option value="$PROJECT_DIR$/src/application/Controller.java" />
         <option value="$PROJECT_DIR$/src/application/view/SimulationOverview.fxml" />
+        <option value="$PROJECT_DIR$/.gitignore" />
       </list>
     </option>
   </component>
@@ -731,16 +735,16 @@
       <workItem from="1464849047124" duration="2700000" />
       <workItem from="1464851923075" duration="2434000" />
       <workItem from="1464854813286" duration="77000" />
-      <workItem from="1464855063859" duration="2322000" />
+      <workItem from="1464855063859" duration="2597000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="9013000" />
+    <option name="totallyTimeSpent" value="9288000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="57" y="23" width="1383" height="877" extended-state="0" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -749,7 +753,7 @@
       <window_info id="Capture Analysis" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.14690529" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.3299363" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.3299363" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.27515924" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
@@ -903,14 +907,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/.gitignore">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-485">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/application/threads/AccelerateBreakDawdleChangeTrackThread.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="610">
@@ -944,6 +940,14 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="180">
           <caret line="19" column="13" selection-start-line="19" selection-start-column="13" selection-end-line="19" selection-end-column="13" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.gitignore">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="484">
+          <caret line="138" column="13" selection-start-line="138" selection-start-column="13" selection-end-line="138" selection-end-column="13" />
           <folding />
         </state>
       </provider>

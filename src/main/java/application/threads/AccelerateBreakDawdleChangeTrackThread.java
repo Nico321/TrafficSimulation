@@ -7,21 +7,18 @@ import java.util.SplittableRandom;
 public class AccelerateBreakDawdleChangeTrackThread extends Thread {
 	private Master master;
 	private Car[][] street;
-	private Integer size, MAX_SPEED;
-	private Double p, p0, c;
+	private Integer size;
+	private Double p, p0;
 
 	private SplittableRandom random = new SplittableRandom();
 
 
-	public AccelerateBreakDawdleChangeTrackThread(Master master, Car[][] street, Integer size, Double p, Double p0,
-			Integer MAX_SPEED, Double c) {
+	public AccelerateBreakDawdleChangeTrackThread(Master master, Car[][] street, Integer size, Double p, Double p0) {
 		this.master = master;
 		this.street = street;
 		this.size = size;
 		this.p = p;
 		this.p0 = p0;
-		this.MAX_SPEED = MAX_SPEED;
-		this.c = c;
 	}
 
 	@Override
@@ -34,7 +31,6 @@ public class AccelerateBreakDawdleChangeTrackThread extends Thread {
 					if (i >= street[0].length)
 						break;
 
-					changeTrackCar(t, i);
 					accelerateCar(t, i);
 					breakCar(t, i);
 					dawdleCar(t, i);
@@ -78,69 +74,6 @@ public class AccelerateBreakDawdleChangeTrackThread extends Thread {
 					c.setSpeed(c.getSpeed() - 1);
 				}
 			}
-		}
-	}
-
-	private void changeTrackCar(int t, int i) {
-		if (street[t][i] != null && street[t][i].getSpeed() > 0) {
-			if (street[t][i] != null) {
-				if (t > 0 && checkTrackChange(i, t, t - 1)) {
-					changeTrack(t, i, t - 1);
-				} else if (t < (street.length - 1) && checkTrackChange(i, t, t + 1)) {
-					changeTrack(t, i, t + 1);
-				}
-			}
-		}
-	}
-
-	private void changeTrack(int t, int i, int targetTrack) {
-		if (street[targetTrack][i] != null)
-			System.out.println(
-					"crash while changing tracks:" + street[t][i] + "-->" + targetTrack + "-" + street[targetTrack][i]);
-		street[targetTrack][i] = street[t][i];
-		street[t][i] = null;
-	}
-
-	private boolean checkTrackChange(int pos, int currentTrack, int targetTrack) {
-		// check neighbour car
-		if (street[targetTrack][pos] != null)
-			return false;
-
-		boolean blockOnOwnStreet = false;
-
-		// Check track change possibility
-		if (random.nextDouble() < c) {
-
-
-			// check previous cars
-			for (int i = 1; i <= street[currentTrack][pos].getSpeed() + 1; i++) {
-				int check = pos + i;
-				if (check >= street[0].length)
-					check -= street[0].length;
-				if (street[targetTrack][check] != null) {
-					return false;
-				}
-				if (street[currentTrack][check] != null) {
-					blockOnOwnStreet = true;
-				}
-			}
-
-			if (!blockOnOwnStreet)
-				return false;
-
-			// check behind cars
-			for (int i = 1; i <= MAX_SPEED; i++) {
-				int check = pos - i;
-				if (check < 0)
-					check += street[0].length;
-				if (street[targetTrack][check] != null) {
-					return false;
-				}
-			}
-
-			return true;
-		} else {
-			return false;
 		}
 	}
 }

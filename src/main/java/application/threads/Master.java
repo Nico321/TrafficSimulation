@@ -65,7 +65,8 @@ public class Master {
 		this.index = 0;
 
 		while (!pause && !stop && (anzIteration == -1 || numSteps < anzIteration)) {
-			accelerateBreakDawdleAndChangeTrack();
+			changeTrack();
+			accelerateBreakDawdle();
 			move();
 
 			Date d = new Date();
@@ -82,6 +83,30 @@ public class Master {
 
 		if (controller != null && numSteps >= anzIteration && anzIteration != -1)
 			controller.stopSimulation();
+	}
+
+	private void changeTrack() {
+		Date d = new Date();
+
+		List<ChangeTrackThread> threads = new ArrayList<>();
+		for (int i = 0; i < numOfThreads; i++) {
+			ChangeTrackThread t = new ChangeTrackThread(this, street,
+					rangeSize, MAX_SPEED, c);
+			t.start();
+			threads.add(t);
+		}
+
+		this.kappa += new Date().getTime() - d.getTime();
+		d = new Date();
+		for (ChangeTrackThread t : threads) {
+			try {
+				t.join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		this.index = 0;
+		this.addPhi(new Date().getTime() - d.getTime());
 	}
 
 	private void move() {
@@ -106,13 +131,13 @@ public class Master {
 		this.addPhi(new Date().getTime() - d.getTime());
 	}
 
-	private void accelerateBreakDawdleAndChangeTrack() {
+	private void accelerateBreakDawdle() {
 		Date d = new Date();
 
 		List<AccelerateBreakDawdleChangeTrackThread> threads = new ArrayList<>();
 		for (int i = 0; i < numOfThreads; i++) {
 			AccelerateBreakDawdleChangeTrackThread t = new AccelerateBreakDawdleChangeTrackThread(this, street,
-					rangeSize, p, p0, MAX_SPEED, c);
+					rangeSize, p, p0);
 			t.start();
 			threads.add(t);
 		}

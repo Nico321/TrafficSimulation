@@ -134,9 +134,9 @@ public class Master {
 	private void accelerateBreakDawdle() {
 		Date d = new Date();
 
-		List<AccelerateBreakDawdleChangeTrackThread> threads = new ArrayList<>();
+		List<AccelerateBreakDawdleThread> threads = new ArrayList<>();
 		for (int i = 0; i < numOfThreads; i++) {
-			AccelerateBreakDawdleChangeTrackThread t = new AccelerateBreakDawdleChangeTrackThread(this, street,
+			AccelerateBreakDawdleThread t = new AccelerateBreakDawdleThread(this, street,
 					rangeSize, p, p0);
 			t.start();
 			threads.add(t);
@@ -144,7 +144,7 @@ public class Master {
 
 		this.kappa += new Date().getTime() - d.getTime();
 		d = new Date();
-		for (AccelerateBreakDawdleChangeTrackThread t : threads) {
+		for (AccelerateBreakDawdleThread t : threads) {
 			try {
 				t.join();
 			} catch (InterruptedException e) {

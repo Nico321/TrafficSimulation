@@ -4,7 +4,7 @@ import application.model.Car;
 
 import java.util.SplittableRandom;
 
-public class AccelerateBreakDawdleChangeTrackThread extends Thread {
+public class AccelerateBreakDawdleThread extends Thread {
 	private Master master;
 	private Car[][] street;
 	private Integer size;
@@ -13,7 +13,7 @@ public class AccelerateBreakDawdleChangeTrackThread extends Thread {
 	private SplittableRandom random = new SplittableRandom();
 
 
-	public AccelerateBreakDawdleChangeTrackThread(Master master, Car[][] street, Integer size, Double p, Double p0) {
+	public AccelerateBreakDawdleThread(Master master, Car[][] street, Integer size, Double p, Double p0) {
 		this.master = master;
 		this.street = street;
 		this.size = size;
@@ -31,25 +31,29 @@ public class AccelerateBreakDawdleChangeTrackThread extends Thread {
 					if (i >= street[0].length)
 						break;
 
-					accelerateCar(t, i);
-					breakCar(t, i);
-					dawdleCar(t, i);
+					simulateCar(t, i);
 				}
 			}
 			index = master.getNextRange();
 		}
 	}
 
-	private void accelerateCar(int t, int i) {
+	private void simulateCar(Integer t, Integer i) {
 		if (street[t][i] != null) {
-			if (street[t][i].getSpeed() < street[t][i].getMaxSpeed()) {
-				street[t][i].incrementSpeed();
-			}
+			accelerateCar(t, i);
+			breakCar(t, i);
+			dawdleCar(t, i);
 		}
 	}
 
+	private void accelerateCar(int t, int i) {
+			if (street[t][i].getSpeed() < street[t][i].getMaxSpeed()) {
+				street[t][i].incrementSpeed();
+			}
+	}
+
 	private void breakCar(int t, int i) {
-		if (street[t][i] != null && street[t][i].getSpeed() > 0) {
+		if (street[t][i].getSpeed() > 0) {
 			for (int j = 1; j <= street[t][i].getSpeed(); j++) {
 				int check = i + j;
 				if (check >= street[0].length)
@@ -63,15 +67,14 @@ public class AccelerateBreakDawdleChangeTrackThread extends Thread {
 	}
 
 	private void dawdleCar(int t, int i) {
-		Car c = street[t][i];
-		if (c != null && c.getSpeed() > 0) {
-			if (c.getSpeed() > 1) {
+		if (street[t][i].getSpeed() > 0) {
+			if (street[t][i].getSpeed() > 1) {
 				if (random.nextDouble() < p) {
-					c.setSpeed(c.getSpeed() - 1);
+					street[t][i].setSpeed(street[t][i].getSpeed() - 1);
 				}
 			} else {
 				if (random.nextDouble() < p0) {
-					c.setSpeed(c.getSpeed() - 1);
+					street[t][i].setSpeed(street[t][i].getSpeed() - 1);
 				}
 			}
 		}

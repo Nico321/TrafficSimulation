@@ -8,6 +8,7 @@ import javafx.geometry.VPos;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.TextAlignment;
@@ -45,6 +46,10 @@ public class Controller {
 
 	@FXML
 	private RadioButton rbDichteProz, rbDichteAbs;
+
+	@FXML
+	private AnchorPane anchorPaneOne, anchorPaneTwo;
+
 	@FXML
 	private TextField tfdisplayStart, tfdisplayStop;
 	private Integer displayStart = 0, displayStop = 0;
@@ -168,6 +173,17 @@ public class Controller {
 		canvas = null;
 		displayStart = Integer.parseInt(tfdisplayStart.getText());
 		displayStop = Integer.parseInt(tfdisplayStop.getText());
+		canvasAnalyticsOne.setWidth(this.displayStop - this.displayStart);
+		anchorPaneOne.setMinWidth(this.displayStop - this.displayStart);
+		anchorPaneOne.setMaxWidth(this.displayStop - this.displayStart);
+		anchorPaneOne.setPrefWidth(this.displayStop - this.displayStart);
+		canvasAnalyticsOne.setHeight(5000);
+		canvasAnalyticsTwo.setWidth(this.displayStop - this.displayStart);
+		anchorPaneTwo.setMinWidth(this.displayStop - this.displayStart);
+		anchorPaneTwo.setMaxWidth(this.displayStop - this.displayStart);
+		anchorPaneTwo.setPrefWidth(this.displayStop - this.displayStart);
+		canvasAnalyticsTwo.setHeight(5000);
+
 		if (!tfFramerate.getText().equals("")) {
 			framerate = Integer.parseInt(tfFramerate.getText());
 			if (master != null)
